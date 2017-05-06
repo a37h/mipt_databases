@@ -20,7 +20,10 @@ def main():
         #                  "values ('teqwqwesaqwedfeqwt1', 'tesqaqweqwsdfweq2', 'tes3aqwedsqwef213', True);")
         db_cursor.execute("SELECT * FROM Users")
         results = db_cursor.fetchall()
-        print(len(results))
+        for i in results:
+            print(i)
+            db_cursor.execute("DELETE FROM Users WHERE user_id = %s" % i[0])
+        db_connection.commit()
     except psycopg2.Error as e:
         print("Error", e)
 
