@@ -8,7 +8,6 @@ CREATE TABLE Users (
 
 CREATE TABLE Groups (
 	group_id serial PRIMARY KEY,
-	alive_status boolean NOT NULL,
 	group_name text UNIQUE NOT NULL
 );
 
@@ -20,7 +19,8 @@ CREATE TABLE User_groups (
 CREATE TABLE Entitys (
   entity_id serial PRIMARY KEY,
   type boolean NOT NULL,
-  entity_origin_id int UNIQUE NOT NULL
+  group_id int FOREIGN KEY REFERENCES Groups(group_id),
+  user_id int FOREIGN KEY REFERENCES Users(user_id)
 );
 
 CREATE TABLE Sessions_log (
