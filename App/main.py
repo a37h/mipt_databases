@@ -8,24 +8,22 @@ def db_connect():
     try:
         print("Connecting...")
         return psycopg2.connect(connection_string)
-    except:
-        print("Can't connect to database. Error:")
+    except psycopg2.Error as e:
+        print("Can't connect to database. Error:", e)
 
 
 def main():
     db_connection = db_connect()
     db_cursor = db_connection.cursor()
-    try:
-        # db_cursor.execute("INSERT INTO Users (user_name, user_email, user_password, email_sub_agreement) "
-        #                  "values ('teqwqwesaqwedfeqwt1', 'tesqaqweqwsdfweq2', 'tes3aqwedsqwef213', True);")
-        db_cursor.execute("SELECT * FROM Users")
-        results = db_cursor.fetchall()
-        for i in results:
-            print(i)
-            db_cursor.execute("DELETE FROM Users WHERE user_id = %s" % i[0])
-        db_connection.commit()
-    except psycopg2.Error as e:
-        print("Error", e)
 
+    register(db_cursor, 'Anatoly', 'Anatoly@mail.ru', '123', 'True')
+
+
+def register(db_cursor, name, email, password, email_subscrition):
+    try:
+        db_cursor.execute("INSERT INTO Users (user_name, user_email, user_password, email_sub_agreement) "
+                          "values ('%s', '%s', '%s', '%s');" % "Anatoly" "Anatoly@mail.ru" "123" "True")
+    except psycopg2.Error as e:
+        print("Error registering user. Error:", e)
 
 main()
