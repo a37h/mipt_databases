@@ -17,19 +17,46 @@ def main():
     db_connection = db_connect()
     db_cursor = db_connection.cursor()
 
+    print("--------------------------")
+    print("TimeManagementApp3000")
+    print("List of commands - type: h (or help)")
+    print("Quit the application: q (or quit)")
+    print("--------------------------")
+
     while True:
+        input_line = input('> ')
+        parser = {'r': frontend_user_registration,
+                  'register': frontend_user_registration,
+                  'l': frontend_user_login,
+                  'login': frontend_user_login}
         try:
-            print('>')
-            input_line = input()
-            print(input_line)
-        except:
-            print('ayy lmao')
-            exit(2)
+            activate = parser[input_line]
+            activate(db_cursor)
+        except KeyError:
+            print(">>> Error: there's no such command. Try again or type: h (or help)")
 
 
-def user_login(db_cursor, name, password):
+def frontend_user_login(db_cursor):
+    name = input('Login: ')
+    password = input('Password: ')
+    backend_user_login(db_cursor, name, password)
+
+
+def frontend_user_registration(db_cursor):
+    name = input('Please enter your login: ')
+    email = input('Please enter your email: ')
+    password = input('Please enter your password: ' )
+    email_subscription = input('Do you want to receive our mail (y\\n): ')
+    if email_subscription == y:
+        email_subscription = True
+    else:
+        email_subscription = False
+    backend_register_new_user(db_cursor, name, email, password, email_subscription)
+
+
+def backend_user_login(db_cursor, name, password):
     try:
-        sql_string = "SELECT * FROM Users WHERE user_name = %s AND user_password = %S"
+        sql_string = "SELECT * FROM Users WHERE user_name = %s AND user_password = %s"
         sql_data_tuple = (name, password)
         db_cursor.execute(sql_string, sql_data_tuple)
     except psycopg2.Error as e:
@@ -41,7 +68,7 @@ def user_login(db_cursor, name, password):
         print('Ooh. Something went wrong here')
 
 
-def register_new_user(db_cursor, name, email, password, email_subscrition):
+def backend_register_new_user(db_cursor, name, email, password, email_subscrition):
     try:
         sql_string = "INSERT INTO Users (user_name, user_email, user_password, " \
                      "email_sub_agreement) values ('%s', '%s', '%s', '%s');"
@@ -51,7 +78,7 @@ def register_new_user(db_cursor, name, email, password, email_subscrition):
         print("Error registering user. Error:", e)
 
 
-def show_a_list_of_users(db_cursor, name):
+def frontend_show_a_list_of_users(db_cursor, name):
     try:
         print("Retrieving list of all users...")
         db_cursor.execute("SELECT * FROM Users;")
