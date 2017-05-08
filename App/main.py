@@ -2,6 +2,8 @@ import psycopg2
 import psycopg2.extras
 import os
 import getpass
+import time
+
 
 def db_connect():
     connection_string = 'dbname=mipt_db_project user=mipt_db_project_user ' \
@@ -36,6 +38,7 @@ def main():
             elif input_line == 'r' or input_line == 'register':
                 if len(current_user_info) == 0:
                     current_user_info = frontend_user_registration(db_cursor)
+                    db_connection.commit()
                 else:
                     print("┣━━━━━ Error: you are already logged in. Use 'h' or 'help'")
 
@@ -58,6 +61,13 @@ def main():
             elif input_line == 'clear' or input_line == 'c':
                 os.system('cls' if os.name == 'nt' else 'clear')
 
+            elif input_line == 'start' or input_line == 's':
+                if len(current_user_info) == 0:
+                    print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                else:
+                    start_session(db_cursor, current_user_info)
+                    db_connection.commit()
+
             else:
                 print("┣━━━━━ Error: no such command, try again or use 'h' or 'help'")
 
@@ -65,6 +75,17 @@ def main():
             shutdown_app()
 
 
+def start_session(db_cursor, current_user_info):
+    try:
+        sql_string = "INSERT INTO Sessions_log (entity_id, type, time_stamp) VALUES (%s, %s, %s)"
+        current_time = time.time()
+        sql_data_tuple = (current_user_info[2], False, current_time)
+        db_cursor.execute(sql_string, sql_data_tuple)
+    except psycopg2.Error as e:
+        print("Error error error", e)
+
+
+# Shutdown app safely
 def shutdown_app():
     print()
     print('┗━━━━━━━━━━ Peace out ━━━ ◠ ◡ ◠  ━━━━━━━━━━━━━━━')
@@ -72,6 +93,7 @@ def shutdown_app():
     exit(0)
 
 
+# Help
 def frontend_show_help(current_user_info):
     if len(current_user_info) == 0:
         print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
@@ -114,7 +136,9 @@ def backend_user_login(db_cursor, name, password):
     if len(result) == 1:
         print('┣━━━━━ Success. Welcome, %s' % name)
         new_user_id = backend_get_user_id(db_cursor, name)
-        return [name, new_user_id]
+
+        user_entity_id = backend_get_user_entity_id(db_cursor, new_user_id)
+        return [name, new_user_id, user_entity_id]
     else:
         print('┣━━━━━ Error: such user doesn\'t exist or password is wrong')
         return ''
@@ -154,19 +178,30 @@ def backend_register_new_user(db_cursor, name, email, password, email_subscritio
         sql_data_tuple = (False, new_user_id)
         db_cursor.execute(sql_string, sql_data_tuple)
 
+        user_entity_id = backend_get_user_entity_id(db_cursor, new_user_id)
+
         print("┣━━━━━ Success. You are now logged in,", name)
-        return [name, new_user_id]
+        return [name, new_user_id, user_entity_id]
     except psycopg2.Error as e:
         print("┣━━━━━ Error registering user. Error:", e)
         return []
 
 
+# Used in registration and login
 def backend_get_user_id(db_cursor, name):
     sql_string = "SELECT user_id FROM Users WHERE user_name = %s"
     sql_data_tuple = (name,)
     db_cursor.execute(sql_string, sql_data_tuple)
     new_user_id_list = db_cursor.fetchall()
     return new_user_id_list[0]
+
+def backend_get_user_entity_id(db_cursor, user_id):
+    sql_string = "SELECT entity_id FROM Entitys WHERE user_id = %s"
+    sql_data_tuple = (user_id,)
+    db_cursor.execute(sql_string, sql_data_tuple)
+    new_user_id_list = db_cursor.fetchall()
+    return new_user_id_list[0]
+
 
 
 main()

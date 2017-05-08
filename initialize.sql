@@ -1,3 +1,10 @@
+DROP DATABASE mipt_db_project;
+DROP ROLE mipt_db_project_user;
+
+CREATE DATABASE mipt_db_project;
+
+\c mipt_db_project;
+
 CREATE TABLE Users (
     user_id serial NOT NULL PRIMARY KEY,
     user_name text UNIQUE NOT NULL,
@@ -29,5 +36,16 @@ CREATE TABLE Sessions_log (
 	session_id serial PRIMARY KEY,
   entity_id int NOT NULL REFERENCES Entitys (entity_id),
 	type boolean NOT NULL,
-	time_stamp timestamp NOT NULL
+	time_stamp varchar(100) NOT NULL
 );
+
+CREATE ROLE mipt_db_project_user with login;
+
+GRANT ALL ON Users TO mipt_db_project_user;
+GRANT ALL ON Groups TO mipt_db_project_user;
+GRANT ALL ON User_groups TO mipt_db_project_user;
+GRANT ALL ON Entitys TO mipt_db_project_user;
+GRANT ALL ON Sessions_log TO mipt_db_project_user;
+GRANT ALL ON entitys_entity_id_seq TO mipt_db_project_user;
+GRANT ALL ON sessions_log_session_id_seq TO mipt_db_project_user;
+GRANT ALL ON users_user_id_seq TO mipt_db_project_user;
