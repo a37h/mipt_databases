@@ -49,3 +49,6 @@ GRANT ALL ON Sessions_log TO mipt_db_project_user;
 GRANT ALL ON entitys_entity_id_seq TO mipt_db_project_user;
 GRANT ALL ON sessions_log_session_id_seq TO mipt_db_project_user;
 GRANT ALL ON users_user_id_seq TO mipt_db_project_user;
+
+\password mipt_db_project_user
+ggHkfIJ9aAFxzjmrkIMfWrvC03wZkgpK

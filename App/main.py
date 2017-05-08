@@ -2,7 +2,7 @@ import psycopg2
 import psycopg2.extras
 import os
 import getpass
-import time
+from datetime import datetime
 
 
 def db_connect():
@@ -21,6 +21,7 @@ def main():
     db_cursor = db_connection.cursor()
 
     current_user_info = []
+    current_session_info = []
 
     print("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
     print("┣━━━━━ TimeManagementApp3000 ━━━━━━━━━━━━━━┫")
@@ -30,63 +31,106 @@ def main():
 
     while True:
         try:
-            input_line = input('┣ ➤  ')
+            try:
+                input_line = input('┣ ➤  ')
 
-            if input_line == 'h' or input_line == 'help':
-                frontend_show_help(current_user_info)
+                if input_line == 'h' or input_line == 'help':
+                    frontend_show_help(current_user_info)
 
-            elif input_line == 'r' or input_line == 'register':
-                if len(current_user_info) == 0:
-                    current_user_info = frontend_user_registration(db_cursor)
-                    db_connection.commit()
+                elif input_line == 'r' or input_line == 'register':
+                    if len(current_user_info) == 0:
+                        current_user_info = frontend_user_registration(db_cursor)
+                        db_connection.commit()
+                    else:
+                        print("┣━━━━━ Error: you are already logged in. Use 'h' or 'help'")
+
+                elif input_line == 'l' or input_line == 'login':
+                    if len(current_user_info) == 0:
+                        current_user_info = frontend_user_login(db_cursor)
+                    else:
+                        print("┣━━━━━ Error: you are already logged in. Use 'h' or 'help'")
+
+                elif input_line == 'q' or input_line == 'quit':
+                    if len(current_session_info) != 0 and current_session_info[1] is False:
+                        stop_session(db_cursor, current_user_info, current_session_info)
+                    shutdown_app()
+
+                elif input_line == 'o' or input_line == 'logout':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        print("┣━━━━━ Goodbye, %s" % (current_user_info[0],))
+                        current_user_info = []
+
+                elif input_line == 'clear' or input_line == 'c':
+                    os.system('cls' if os.name == 'nt' else 'clear')
+
+                elif input_line == 'go' or input_line == 'g':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        if len(current_session_info) == 0 or current_session_info[1] is True:
+                            current_session_info = start_session(
+                                db_cursor, current_user_info, current_session_info)
+                            db_connection.commit()
+                        else:
+                            print("┣━━━━━ Error: you have an active session. Use 's' or 'stop'")
+
+                elif input_line == 'stop' or input_line == 's':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        if len(current_session_info) != 0 and current_session_info[1] is False:
+                            current_session_info = stop_session(
+                                db_cursor, current_user_info, current_session_info)
+                            db_connection.commit()
+                        else:
+                            print("┣━━━━━ Error: first you have to start a session. Use 'g' or 'go'")
+
+
+
                 else:
-                    print("┣━━━━━ Error: you are already logged in. Use 'h' or 'help'")
+                    print("┣━━━━━ Error: no such command, try again or use 'h' or 'help'")
 
-            elif input_line == 'l' or input_line == 'login':
-                if len(current_user_info) == 0:
-                    current_user_info = frontend_user_login(db_cursor)
-                else:
-                    print("┣━━━━━ Error: you are already logged in. Use 'h' or 'help'")
-
-            elif input_line == 'q' or input_line == 'quit':
+            except EOFError:
+                if len(current_session_info) != 0 and current_session_info[1] is False:
+                    stop_session(db_cursor, current_user_info, current_session_info)
                 shutdown_app()
-
-            elif input_line == 'o' or input_line == 'logout':
-                if len(current_user_info) == 0:
-                    print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
-                else:
-                    print("┣━━━━━ Goodbye, %s" % (current_user_info[0],))
-                    current_user_info = []
-
-            elif input_line == 'clear' or input_line == 'c':
-                os.system('cls' if os.name == 'nt' else 'clear')
-
-            elif input_line == 'start' or input_line == 's':
-                if len(current_user_info) == 0:
-                    print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
-                else:
-                    start_session(db_cursor, current_user_info)
-                    db_connection.commit()
-
-            else:
-                print("┣━━━━━ Error: no such command, try again or use 'h' or 'help'")
-
-        except EOFError:
+        except KeyboardInterrupt:
+            if len(current_session_info) != 0 and current_session_info[1] is False:
+                stop_session(db_cursor, current_user_info, current_session_info)
             shutdown_app()
 
 
-def start_session(db_cursor, current_user_info):
+def start_session(db_cursor, current_user_info, current_session_info):
     try:
         sql_string = "INSERT INTO Sessions_log (entity_id, type, time_stamp) VALUES (%s, %s, %s)"
-        current_time = time.time()
+        current_time = datetime.today()
         sql_data_tuple = (current_user_info[2], False, current_time)
         db_cursor.execute(sql_string, sql_data_tuple)
+        print('┣━━━━━ Session started on %s' % current_time)
+        return [current_user_info[2], False, current_time]
     except psycopg2.Error as e:
-        print("Error error error", e)
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return current_session_info
+
+
+def stop_session(db_cursor, current_user_info, current_session_info):
+    try:
+        sql_string = "INSERT INTO Sessions_log (entity_id, type, time_stamp) VALUES (%s, %s, %s)"
+        current_time = datetime.today()
+        sql_data_tuple = (current_user_info[2], True, current_time)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        print('┣━━━━━ Session ended on %s' % current_time)
+        return [current_user_info[2], True, current_time]
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return current_session_info
 
 
 # Shutdown app safely
 def shutdown_app():
+
     print()
     print('┗━━━━━━━━━━ Peace out ━━━ ◠ ◡ ◠  ━━━━━━━━━━━━━━━')
     print()
@@ -114,7 +158,7 @@ def frontend_show_help(current_user_info):
 def frontend_user_login(db_cursor):
     try:
         try:
-            name =     input('┣━━━━━ Login: ')
+            name = input('┣━━━━━ Login: ')
             password = getpass.getpass('┣━━━━━ Password: ')
             return backend_user_login(db_cursor, name, password)
         except KeyboardInterrupt:
@@ -195,13 +239,14 @@ def backend_get_user_id(db_cursor, name):
     new_user_id_list = db_cursor.fetchall()
     return new_user_id_list[0]
 
+
+# Used in registration and login
 def backend_get_user_entity_id(db_cursor, user_id):
     sql_string = "SELECT entity_id FROM Entitys WHERE user_id = %s"
     sql_data_tuple = (user_id,)
     db_cursor.execute(sql_string, sql_data_tuple)
     new_user_id_list = db_cursor.fetchall()
     return new_user_id_list[0]
-
 
 
 main()
