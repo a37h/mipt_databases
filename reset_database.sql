@@ -20,7 +20,8 @@ CREATE TABLE Groups (
 
 CREATE TABLE User_groups (
 	group_id int NOT NULL REFERENCES Groups (group_id),
-	user_id int NOT NULL REFERENCES Users (user_id)
+	user_id int NOT NULL REFERENCES Users (user_id),
+	user_status varchar(1) NOT NULL
 );
 
 CREATE TABLE Entitys (
