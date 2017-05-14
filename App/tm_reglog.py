@@ -1,4 +1,7 @@
 import getpass  # for getting password safe
+from tm_userids import *  # functions for getting user id and user entity id
+import psycopg2
+import psycopg2.extras
 
 
 # Login (first part)
@@ -76,24 +79,6 @@ def backend_register_new_user(db_cursor, name, email, password, email_subscritio
     except psycopg2.Error as e:
         print("┣━━━━━ Error registering user. Error:", e)
         return []
-
-
-# Used in registration and login
-def backend_get_user_id(db_cursor, name):
-    sql_string = "SELECT user_id FROM Users WHERE user_name = %s"
-    sql_data_tuple = (name,)
-    db_cursor.execute(sql_string, sql_data_tuple)
-    new_user_id_list = db_cursor.fetchall()
-    return new_user_id_list[0]
-
-
-# Used in registration and login
-def backend_get_user_entity_id(db_cursor, user_id):
-    sql_string = "SELECT entity_id FROM Entitys WHERE user_id = %s"
-    sql_data_tuple = (user_id,)
-    db_cursor.execute(sql_string, sql_data_tuple)
-    new_user_id_list = db_cursor.fetchall()
-    return new_user_id_list[0]
 
 
 # Shutdown app safely
