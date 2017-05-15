@@ -5,6 +5,54 @@ from time import gmtime, strftime
 from entity_ids import *
 
 
+def show_groups_list(db_cursor, current_user_info):
+    try:
+        sql_string = "SELECT Groups.group_id, user_status, group_name FROM User_groups, Groups WHERE user_id = %s AND (user_status = '1' OR user_status = '2') " \
+                     "AND User_groups.group_id = Groups.group_id;"
+        sql_data_tuple = (current_user_info[1],)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) == 0:
+            print("┣━━━━━ Error: you aren't a member or invited to any of groups.")
+            return
+        else:
+            for i in something:
+                status = ''
+                if i[1] == '1':
+                    status = 'member'
+                else:
+                    status = 'invited'
+                print("┣━━ Group name: '%s'. Your status: '%s'" % (i[2], status))
+            return
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return
+
+
+def switch_group(db_cursor, current_user_info, group_name):
+    try:
+        group_id = backend_get_group_id(db_cursor, group_name)
+        if group_id == -1:
+            print("┣━━━━━ Error: there is no such group yet.")
+            return
+
+        # check if current_user is a member
+        sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND user_id = %s AND user_status = '1'"
+        sql_data_tuple = (group_id, current_user_info[1],)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) == 0:
+            print("┣━━━━━ Error: you aren't a member of that group.")
+            return []
+        else:
+            print("┣━━━━━ Success. Group switched to '%s'" % group_name)
+            return [group_name, group_id, backend_get_group_entity_id(db_cursor, group_id)]
+
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return
+
+
 def delete_group(db_cursor, current_user_info, group_name_):
     try:
         group_id = backend_get_group_id(db_cursor, group_name_)
@@ -73,8 +121,8 @@ def join_group(db_cursor, current_user_info, group_name_):
             return
 
         # check if current_user is invited
-        sql_string = "SELECT * FROM User_groups WHERE user_id = %s"
-        sql_data_tuple = (current_user_info[1],)
+        sql_string = "SELECT * FROM User_groups WHERE user_id = %s AND group_id = %s"
+        sql_data_tuple = (current_user_info[1], temp)
         db_cursor.execute(sql_string, sql_data_tuple)
         something = db_cursor.fetchall()
         if len(something) == 0:
@@ -244,38 +292,3 @@ def stop_session(db_connection, db_cursor, current_user_info, current_session_in
         print("┣━━━━━ Error: some unexpected error.", e)
         return current_session_info
 
-
-# Help
-def frontend_show_help(current_user_info):
-    if len(current_user_info) == 0:
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-        print("┃  'r' or 'register' to register if you're new                   ┃")
-        print("┃  'l' or 'login' to login if you're already registered          ┃")
-        print("┃  'c' or 'clear' if you want to clear your screen               ┃")
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
-    else:
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-        print("┃  'c' or 'clear' if you want to clear your screen               ┃")
-        print("┃  'o' or 'logout' to logout from your account                   ┃")
-        print("┃  'g' or 'go' to start a time management session                ┃")
-        print("┃  's' or 'stop' to stop a time management session               ┃")
-        print("┃  'stats' or 'stats <n>' to get a list of 10 or n last sessions ┃")
-        print("┃  'help groups' to get a list of commands for using groups      ┃")
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
-
-# Help
-def frontend_show_help_groups(current_user_info):
-    if len(current_user_info) == 0:
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-        print("┃  'r' or 'register' to register if you're new                   ┃")
-        print("┃  'l' or 'login' to login if you're already registered          ┃")
-        print("┃  'c' or 'clear' if you want to clear your screen               ┃")
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
-    else:
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-        print("┃  'create group <group name>' to create a group                 ┃")
-        print("┃  'invite to <group name> user <user name> to invite a user     ┃")
-        print("┃  'join group <group name>' to join a group                     ┃")
-        print("┃  'leave group <group name>' to leave a group                   ┃")
-        print("┃  'delete group <group name>' to delete a group                 ┃")
-        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")

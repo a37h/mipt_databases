@@ -30,3 +30,10 @@ def backend_get_group_id(db_cursor, group_name):
         return -1
     else:
         return qq[0]
+
+def backend_get_group_entity_id(db_cursor, group_id):
+    sql_string = "SELECT entity_id FROM Entitys WHERE group_id = %s"
+    sql_data_tuple = (group_id,)
+    db_cursor.execute(sql_string, sql_data_tuple)
+    group_entity_id = db_cursor.fetchall()
+    return group_entity_id[0]

@@ -5,7 +5,7 @@ from regis_login import *  # functions for logging in and out
 from database_conn import *  # functions for working with database
 from user_interface import *  # functions for user interface
 import re
-
+from help import *  # help functions
 
 def main():
     # create an connection and cursor
@@ -14,6 +14,7 @@ def main():
 
     current_user_info = []  # user_name, user_id, user_entity_id
     current_session_info = []  # user_entity_id, Boolean, time
+    current_active_group = []  # group_name, group_id, group_entity_id
 
     print("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
     print("┣━━━━━ TimeManagementApp3000                                     ┃")
@@ -27,6 +28,8 @@ def main():
     regular4 = re.compile('join group [a-zA-Z0-9]*')
     regular5 = re.compile('delete group [a-zA-Z0-9]*')
     regular6 = re.compile('leave group [a-zA-Z0-9]*')
+    regular7 = re.compile('switch group [a-zA-Z0-9]*')
+
 
     while True:
         try:
@@ -38,12 +41,22 @@ def main():
                 splitedline4 = regular4.findall(input_line)
                 splitedline5 = regular5.findall(input_line)
                 splitedline6 = regular6.findall(input_line)
+                splitedline7 = regular7.findall(input_line)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if input_line == 'h' or input_line == 'help':
                     frontend_show_help(current_user_info)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'help groups':
                     frontend_show_help_groups(current_user_info)
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif input_line == 'current group':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        if len(current_active_group) != 0:
+                            print("┣━━━━━ Right now you're working in '%s' group" % current_active_group[0])
+                        else:
+                            print("┣━━━━━ You aren't in any of groups right now. Use 'switch group <group name>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'r' or input_line == 'register':
                     if len(current_user_info) == 0:
@@ -103,60 +116,90 @@ def main():
                             print("┣━━━━━ Showing last 10 results by default (use h for more info):")
                             show_list_of_sessions(db_cursor, current_user_info, current_session_info)
                         else:
-                            regular = re.compile('[0-9]*')
-                            wtf = regular.findall(input_line)
-                            print("┣━━━━━ Showing last %s results:" % wtf[6])
-                            show_list_of_sessions(db_cursor, current_user_info, current_session_info, int(wtf[6]))
+                            try:
+                                regular = re.compile('[0-9]+')
+                                wtf = regular.findall(input_line)
+                                print("┣━━━━━ Showing last %s results:" % wtf[0])
+                                show_list_of_sessions(db_cursor, current_user_info, current_session_info, int(wtf[0]))
+                            except ValueError or IndexError:
+                                print("┣━━━━━ Error: use 'stats <n>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif len(splitedline2) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        regular = re.compile('[a-zA-Z0-9]*')
-                        wtf = regular.findall(input_line)
-                        print("┣━━━━━ ...creating group called '%s':" % wtf[4])
-                        create_group(db_cursor, current_user_info, wtf[4])
-                        db_connection.commit()
+                        try:
+                            regular = re.compile('[a-zA-Z0-9]+')
+                            wtf = regular.findall(input_line)
+                            create_group(db_cursor, current_user_info, wtf[2])
+                            db_connection.commit()
+                        except ValueError:
+                            print("┣━━━━━ Error: use 'create group <group_name>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif len(splitedline3) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        regular = re.compile('[a-zA-Z0-9]*')
-                        wtf = regular.findall(input_line)
-                        print("┣━━━━━ ... inviting user '%s' to group '%s':" % (wtf[4], wtf[8]))
-                        invite_to_group(db_cursor, current_user_info, wtf[4], wtf[8])
-                        db_connection.commit()
+                        try:
+                            regular = re.compile('[a-zA-Z0-9]+')
+                            wtf = regular.findall(input_line)
+                            invite_to_group(db_cursor, current_user_info, wtf[2], wtf[4])
+                            db_connection.commit()
+                        except ValueError:
+                            print("┣━━━━━ Error: use 'invite to <group_name> user <user_name>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif len(splitedline4) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        regular = re.compile('[a-zA-Z0-9]*')
-                        wtf = regular.findall(input_line)
-                        print("┣━━━━━ ... trying to join group '%s':" % wtf[4])
-                        join_group(db_cursor, current_user_info, wtf[4])
-                        db_connection.commit()
+                        try:
+                            regular = re.compile('[a-zA-Z0-9]+')
+                            wtf = regular.findall(input_line)
+                            join_group(db_cursor, current_user_info, wtf[2])
+                            db_connection.commit()
+                        except ValueError:
+                            print("┣━━━━━ Error: use 'join group <group_name>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif len(splitedline5) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        regular = re.compile('[a-zA-Z0-9]*')
-                        wtf = regular.findall(input_line)
-                        print("┣━━━━━ ... trying to delete group '%s':" % wtf[4])
-                        delete_group(db_cursor, current_user_info, wtf[4])
-                        db_connection.commit()
+                        try:
+                            regular = re.compile('[a-zA-Z0-9]+')
+                            wtf = regular.findall(input_line)
+                            delete_group(db_cursor, current_user_info, wtf[2])
+                            db_connection.commit()
+                        except ValueError:
+                            print("┣━━━━━ Error: use 'delete group <group_name>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif len(splitedline6) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        regular = re.compile('[a-zA-Z0-9]*')
-                        wtf = regular.findall(input_line)
-                        print("┣━━━━━ ... trying to leave group '%s':" % wtf[4])
-                        leave_group(db_cursor, current_user_info, wtf[4])
-                        db_connection.commit()
+                        try:
+                            regular = re.compile('[a-zA-Z0-9]+')
+                            wtf = regular.findall(input_line)
+                            leave_group(db_cursor, current_user_info, wtf[2])
+                            db_connection.commit()
+                        except ValueError:
+                            print("┣━━━━━ Error: use 'leave group <group_name>'")
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif len(splitedline7) != 0:
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        try:
+                            regular = re.compile('[a-zA-Z0-9]+')
+                            wtf = regular.findall(input_line)
+                            current_active_group = switch_group(db_cursor, current_user_info, wtf[2])
+                        except ValueError:
+                            print("┣━━━━━ Error: use 'leave group <group_name>'")
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif input_line == 'groups list':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        show_groups_list(db_cursor, current_user_info)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 else:
                     print("┣━━━━━ Error: no such command, try again or use 'h' or 'help'")
@@ -170,7 +213,6 @@ def main():
             if len(current_session_info) != 0 and current_session_info[1] is False:
                 stop_session(db_connection, db_cursor, current_user_info, current_session_info)
             shutdown_app()
-            print(2)
 
 
 main()
