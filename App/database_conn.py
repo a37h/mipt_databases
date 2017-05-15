@@ -9,5 +9,5 @@ def db_connect():
     try:
         return psycopg2.connect(connection_string)
     except psycopg2.Error as e:
-        print("Can not connect to database. Error:", e)
+        print("Can not connect to database.")
         exit(0)

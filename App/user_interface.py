@@ -58,7 +58,7 @@ def group_start_session(db_cursor, current_group_info):
         print('┣━━━━━ Group session started on %s' % current_time)
         return [current_group_info[2], False, current_time]
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return current_session_info
 
 
@@ -71,7 +71,7 @@ def group_stop_session(db_cursor, current_group_info):
         print('┣━━━━━ Group session ended on %s' % current_time)
         return [current_group_info[2], True, current_time]
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return current_group_info
 
 
@@ -96,7 +96,7 @@ def show_groups_list(db_cursor, current_user_info):
                 print("┣━━ Group name: '%s'. Your status: '%s'" % (i[2], status))
             return
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -120,7 +120,7 @@ def switch_group(db_cursor, current_user_info, group_name):
             return [group_name, group_id, backend_get_group_entity_id(db_cursor, group_id)]
 
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -149,7 +149,7 @@ def delete_group(db_cursor, current_user_info, group_name_):
                 db_cursor.execute(sql_string, sql_data_tuple)
                 print("┣━━━━━ Success.")
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -178,7 +178,7 @@ def leave_group(db_cursor, current_user_info, group_name_):
             db_cursor.execute(sql_string, sql_data_tuple)
             print("┣━━━━━ Success.")
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -213,7 +213,7 @@ def join_group(db_cursor, current_user_info, group_name_):
                 print("┣━━━━━ Success.")
                 return
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -230,7 +230,7 @@ def create_group(db_cursor, current_user_info, group_name_):
         sql_data_tuple = (True, temp)
         db_cursor.execute(sql_string, sql_data_tuple)
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -292,7 +292,7 @@ def invite_to_group(db_cursor, current_user_info, group_name_, other_user_name):
         db_cursor.execute(sql_string, sql_data_tuple)
         print('┣━━━━━ Success.')
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return
 
 
@@ -332,7 +332,7 @@ def show_list_of_sessions(db_cursor, current_user_info, current_session_info, am
         print("┣━━━━━ You've made %s sessions, average duration is: %s" % (amount_of_sessions, avg_sessions_length))
 
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return current_session_info
 
 
@@ -346,7 +346,7 @@ def start_session(db_connection, db_cursor, current_user_info, current_session_i
         db_connection.commit()
         return [current_user_info[2], False, current_time]
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return current_session_info
 
 
@@ -360,6 +360,6 @@ def stop_session(db_connection, db_cursor, current_user_info, current_session_in
         db_connection.commit()
         return [current_user_info[2], True, current_time]
     except psycopg2.Error as e:
-        print("┣━━━━━ Error: some unexpected error.", e)
+        print("┣━━━━━ Error: some unexpected error.")
         return current_session_info
 

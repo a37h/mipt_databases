@@ -2,6 +2,7 @@ import getpass  # for getting password safe
 from entity_ids import *  # functions for getting user id and user entity id
 import psycopg2
 import psycopg2.extras
+import re
 
 
 # Login (first part)
@@ -25,7 +26,7 @@ def backend_user_login(db_cursor, name, password):
         sql_data_tuple = (name, password)
         db_cursor.execute(sql_string, sql_data_tuple)
     except psycopg2.Error as e:
-        print("┣━━━━v Error loggining. Error:", e)
+        print("┣━━━━v Error loggining. Error:")
     result = db_cursor.fetchall()
     if len(result) == 1:
         print('┣━━━━━ Success. Welcome, %s' % name)
@@ -44,6 +45,9 @@ def frontend_user_registration(db_cursor):
         try:
             name = input('┣━━━━━ Please enter your login: ')
             email = input('┣━━━━━ Please enter your email: ')
+            if not re.match(r'[a-zA-Z0-9]+@[a-zA-Z0-9](.[a-zA-Z0-9])+', email):
+                print("┣━━━━━ Error registering user. Wrong email format.")
+                return[]
             password = getpass.getpass('┣━━━━━ Please enter your password: ')
             email_subscription = str(input('┣━━━━━ Email subscription? (y\\n): '))
             if email_subscription == 'y':
@@ -77,7 +81,7 @@ def backend_register_new_user(db_cursor, name, email, password, email_subscritio
         print("┣━━━━━ Success. You are now logged in,", name)
         return [name, new_user_id, user_entity_id]
     except psycopg2.Error as e:
-        print("┣━━━━━ Error registering user. Error:", e)
+        print("┣━━━━━ Error registering user.")
         return []
 
 
