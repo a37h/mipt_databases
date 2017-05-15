@@ -112,11 +112,16 @@ def main():
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        temp = backend_get_last_group_session_status(db_cursor, current_active_group[2])
-                        if temp is True:
-                            group_start_session(db_connection, db_cursor, current_user_info, current_session_info)
+                        if len(current_active_group) != 0:
+                            temp = backend_get_last_group_session_status(db_cursor, current_active_group[2])
+                            if temp is True:
+                                group_start_session(db_cursor, current_active_group)
+                                db_connection.commit()
+                            else:
+                                print("┣━━━━━ Error: group has an active session. Use 'gs' or 'group stop'")
                         else:
-                            print("┣━━━━━ Error: group has an active session. Use 'gs' or 'group stop'")
+                            print("┣━━━━━ Error: first you should select an active group")
+                            print("              use 'switch group <group_name>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'group stop' or input_line == 'gs':
                     if len(current_user_info) == 0:
@@ -124,7 +129,8 @@ def main():
                     else:
                         temp = backend_get_last_group_session_status(db_cursor, current_active_group[2])
                         if temp is False:
-                            group_start_session(db_connection, db_cursor, current_user_info, current_session_info)
+                            group_stop_session(db_cursor, current_active_group)
+                            db_connection.commit()
                         else:
                             print("┣━━━━━ Error: group have to start a session first. Use 'gg' or 'group go'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
