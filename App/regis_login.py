@@ -1,5 +1,5 @@
 import getpass  # for getting password safe
-from tm_userids import *  # functions for getting user id and user entity id
+from user_entity_ids import *  # functions for getting user id and user entity id
 import psycopg2
 import psycopg2.extras
 

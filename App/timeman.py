@@ -1,9 +1,9 @@
 import psycopg2  # for connection to database
 import psycopg2.extras  # for working with database
 import os  # for clearing console screen
-from tm_reglog import *  # functions for logging in and out
-from tm_dbconn import *  # functions for working with database
-from tm_userint import *  # functions for user interface
+from regis_login import *  # functions for logging in and out
+from database_conn import *  # functions for working with database
+from user_interface import *  # functions for user interface
 
 
 def main():
@@ -11,8 +11,8 @@ def main():
     db_connection = db_connect()
     db_cursor = db_connection.cursor()
 
-    current_user_info = []
-    current_session_info = []
+    current_user_info = []  # user_name, user_id, user_entity_id
+    current_session_info = []  # user_entity_id, Boolean, time
 
     print("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
     print("┣━━━━━ TimeManagementApp3000 ━━━━━━━━━━━━━━┫")
@@ -44,7 +44,9 @@ def main():
                 elif input_line == 'q' or input_line == 'quit':
                     if len(current_session_info) != 0 and current_session_info[1] is False:
                         stop_session(db_cursor, current_user_info, current_session_info)
-                    shutdown_app()
+                    print('┗━━━━━━━━━━ Peace out ━━━ ◠ ◡ ◠  ━━━━━━━━━━━━━━━')
+                    print()
+                    exit(0)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'o' or input_line == 'logout':
                     if len(current_user_info) == 0:
