@@ -108,6 +108,26 @@ def main():
                         else:
                             print("┣━━━━━ Error: first you have to start a session. Use 'g' or 'go'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif input_line == 'group go' or input_line == 'gg':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        temp = backend_get_last_group_session_status(db_cursor, current_active_group[2])
+                        if temp is True:
+                            group_start_session(db_connection, db_cursor, current_user_info, current_session_info)
+                        else:
+                            print("┣━━━━━ Error: group has an active session. Use 'gs' or 'group stop'")
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif input_line == 'group stop' or input_line == 'gs':
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        temp = backend_get_last_group_session_status(db_cursor, current_active_group[2])
+                        if temp is False:
+                            group_start_session(db_connection, db_cursor, current_user_info, current_session_info)
+                        else:
+                            print("┣━━━━━ Error: group have to start a session first. Use 'gg' or 'group go'")
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'stats' or len(splitedline) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")

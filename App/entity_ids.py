@@ -37,3 +37,14 @@ def backend_get_group_entity_id(db_cursor, group_id):
     db_cursor.execute(sql_string, sql_data_tuple)
     group_entity_id = db_cursor.fetchall()
     return group_entity_id[0]
+
+
+def backend_get_last_group_session_status(db_cursor, group_entity_id):
+    sql_string = "SELECT type FROM Sessions_log WHERE entity_id = %s ORDER BY time_stamp DESC LIMIT 1"
+    sql_data_tuple = (group_entity_id,)
+    db_cursor.execute(sql_string, sql_data_tuple)
+    group_session = db_cursor.fetchall()
+    try:
+        return group_session[0][0]
+    except IndexError:
+        return True

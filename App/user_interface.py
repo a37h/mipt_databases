@@ -5,6 +5,35 @@ from time import gmtime, strftime
 from entity_ids import *
 
 
+def group_start_session(db_connection, db_cursor, current_group_info):
+    try:
+        sql_string = "INSERT INTO Sessions_log (entity_id, type, time_stamp) VALUES (%s, %s, %s)"
+        current_time = strftime("%d-%m-%Y %H:%M:%S", gmtime())
+        sql_data_tuple = (current_group_info[2], False, current_time)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        print('┣━━━━━ Group session started on %s' % current_time)
+        db_connection.commit()
+        return [current_group_info[2], False, current_time]
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return current_session_info
+
+
+def group_stop_session(db_connection, db_cursor, current_group_info):
+    try:
+        sql_string = "INSERT INTO Sessions_log (entity_id, type, time_stamp) VALUES (%s, %s, %s)"
+        current_time = strftime("%d-%m-%Y %H:%M:%S", gmtime())
+        sql_data_tuple = (current_group_info[2], True, current_time)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        print('┣━━━━━ Group session ended on %s' % current_time)
+        db_connection.commit()
+        return [current_group_info[2], True, current_time]
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return current_group_info
+
+
+
 def show_groups_list(db_cursor, current_user_info):
     try:
         sql_string = "SELECT Groups.group_id, user_status, group_name FROM User_groups, Groups WHERE user_id = %s AND (user_status = '1' OR user_status = '2') " \
