@@ -14,7 +14,7 @@ CREATE TABLE Users (
 );
 
 CREATE TABLE Groups (
-	group_id int NOT NULL PRIMARY KEY,
+	group_id serial NOT NULL PRIMARY KEY,
 	group_name text UNIQUE NOT NULL
 );
 
@@ -44,6 +44,7 @@ CREATE ROLE mipt_db_project_user with login;
 
 GRANT ALL ON Users TO mipt_db_project_user;
 GRANT ALL ON Groups TO mipt_db_project_user;
+GRANT ALL ON Groups_group_id_seq TO mipt_db_project_user;
 GRANT ALL ON User_groups TO mipt_db_project_user;
 GRANT ALL ON Entitys TO mipt_db_project_user;
 GRANT ALL ON Sessions_log TO mipt_db_project_user;

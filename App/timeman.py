@@ -4,6 +4,7 @@ import os  # for clearing console screen
 from regis_login import *  # functions for logging in and out
 from database_conn import *  # functions for working with database
 from user_interface import *  # functions for user interface
+import re
 
 
 def main():
@@ -14,16 +15,23 @@ def main():
     current_user_info = []  # user_name, user_id, user_entity_id
     current_session_info = []  # user_entity_id, Boolean, time
 
-    print("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
-    print("┣━━━━━ TimeManagementApp3000 ━━━━━━━━━━━━━━┫")
-    print("┣━ 'help' or 'h' to get a list of commands ┫")
-    print("┣━ 'quit' or 'q' to exit the app ━━━━━━━━━━┫")
-    print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
+    print("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
+    print("┣━━━━━ TimeManagementApp3000                                     ┃")
+    print("┃ 'help' or 'h' to get a list of commands                        ┃")
+    print("┃ 'quit' or 'q' to exit the app                                  ┃")
+    print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
+
+    regular1 = re.compile('stats [0-9]*')
+    regular2 = re.compile('create group [a-zA-Z0-9]*')
+    regular3 = re.compile('invite to [a-zA-Z0-9]* user [a-zA-Z0-9]*')
 
     while True:
         try:
             try:
                 input_line = input('┣ ➤  ')
+                splitedline = regular1.findall(input_line)
+                splitedline2 = regular2.findall(input_line)
+                splitedline3 = regular3.findall(input_line)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if input_line == 'h' or input_line == 'help':
                     frontend_show_help(current_user_info)
@@ -78,12 +86,40 @@ def main():
                         else:
                             print("┣━━━━━ Error: first you have to start a session. Use 'g' or 'go'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                elif input_line == 'stats':
+                elif input_line == 'stats' or len(splitedline) != 0:
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
-                        print("┣━━━━━ Goodbye, %s" % (current_user_info[0],))
-                        show_list_of_sessions(db_cursor, current_user_info, current_session_info)
+                        if input_line == 'stats':
+                            print("┣━━━━━ Showing last 10 results by default (use h for more info):")
+                            show_list_of_sessions(db_cursor, current_user_info, current_session_info)
+                        else:
+                            regular = re.compile('[0-9]*')
+                            wtf = regular.findall(input_line)
+                            print("┣━━━━━ Showing last %s results:" % wtf[6])
+                            show_list_of_sessions(db_cursor, current_user_info, current_session_info, int(wtf[6]))
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif len(splitedline2) != 0:
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        regular = re.compile('[a-zA-Z0-9]*')
+                        wtf = regular.findall(input_line)
+                        print(wtf)
+                        print("┣━━━━━ Creating group called '%s':" % wtf[4])
+                        create_group(db_cursor, db_connection, current_user_info, wtf[4])
+                        db_connection.commit()
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif len(splitedline3) != 0:
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        regular = re.compile('[a-zA-Z0-9]*')
+                        wtf = regular.findall(input_line)
+                        print(wtf)
+                        print("┣━━━━━ Inviting user %s to group %s:" % (wtf[4], wtf[8]))
+                        invite_to_group(db_cursor, db_connection, current_user_info, wtf[4], wtf[8])
+                        db_connection.commit()
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 else:
                     print("┣━━━━━ Error: no such command, try again or use 'h' or 'help'")
