@@ -36,4 +36,5 @@ def frontend_show_help_groups(current_user_info):
         print("┃  'leave group <group name>' to leave a group                   ┃")
         print("┃  'delete group <group name>' to delete a group                 ┃")
         print("┃  'current group' to see group you're working with right now    ┃")
+        print("┃  'group stats' or 'group stats <n>' to get stats on your group ┃")
         print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")

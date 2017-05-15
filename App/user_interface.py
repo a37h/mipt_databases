@@ -5,19 +5,23 @@ from time import gmtime, strftime
 from entity_ids import *
 
 
-def show_list_of_sessions(db_cursor, current_user_info, current_session_info, amount_of_rows=10):
+def show_group_list_of_sessions(db_cursor, current_group_info,  amount_of_rows=10):
     try:
         if amount_of_rows <= 0:
-            return current_session_info
+            return
         amount_of_rows = int(amount_of_rows)
+        if len(current_group_info) == 0:
+            print("┣━━━━━ Error: you don't have any active group right now")
+            print("       use 'switch group <group_name>")
+            return
 
         sql_string = "SELECT * FROM Sessions_log WHERE entity_id = %s ORDER BY time_stamp DESC"
-        sql_data_tuple = (current_user_info[2],)
+        sql_data_tuple = (current_group_info[2],)
         db_cursor.execute(sql_string, sql_data_tuple)
         sessions_list = db_cursor.fetchall()
 
         if len(sessions_list) == 0:
-            return current_session_info
+            return
 
         amount_of_sessions = len(sessions_list)//2
 
@@ -34,15 +38,15 @@ def show_list_of_sessions(db_cursor, current_user_info, current_session_info, am
             if i != 0:
                 avg_sessions_length += end - start
             if i < amount_of_rows:
-                print("┣━ %s spent from |%s| to |%s|" % (str(end - start), str(start), str(end)))
+                print("┣━ %s group spent from |%s| to |%s|" % (str(end - start), str(start), str(end)))
 
         avg_sessions_length /= amount_of_sessions
 
-        print("┣━━━━━ You've made %s sessions, average duration is: %s" % (amount_of_sessions, avg_sessions_length))
+        print("┣━━━━━ Group made %s sessions, average duration is: %s" % (amount_of_sessions, avg_sessions_length))
 
     except psycopg2.Error as e:
         print("┣━━━━━ Error: some unexpected error.", e)
-        return current_session_info
+        return
 
 
 def group_start_session(db_cursor, current_group_info):

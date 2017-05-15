@@ -29,6 +29,7 @@ def main():
     regular5 = re.compile('delete group [a-zA-Z0-9]*')
     regular6 = re.compile('leave group [a-zA-Z0-9]*')
     regular7 = re.compile('switch group [a-zA-Z0-9]*')
+    regular8 = re.compile('group stats [0-9]+')
 
 
     while True:
@@ -42,6 +43,7 @@ def main():
                 splitedline5 = regular5.findall(input_line)
                 splitedline6 = regular6.findall(input_line)
                 splitedline7 = regular7.findall(input_line)
+                splitedline8 = regular8.findall(input_line)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if input_line == 'h' or input_line == 'help':
                     frontend_show_help(current_user_info)
@@ -84,6 +86,8 @@ def main():
                     else:
                         print("┣━━━━━ Goodbye, %s" % (current_user_info[0],))
                         current_user_info = []
+                        current_active_group = []
+                        current_session_info = []
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'clear' or input_line == 'c':
                     os.system('cls' if os.name == 'nt' else 'clear')
@@ -134,7 +138,7 @@ def main():
                         else:
                             print("┣━━━━━ Error: group have to start a session first. Use 'gg' or 'group go'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-                elif input_line == 'stats' or len(splitedline) != 0:
+                elif input_line == 'stats' or (len(splitedline) != 0 and len(input_line.split()) == 2):
                     if len(current_user_info) == 0:
                         print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
                     else:
@@ -147,6 +151,22 @@ def main():
                                 wtf = regular.findall(input_line)
                                 print("┣━━━━━ Showing last %s results:" % wtf[0])
                                 show_list_of_sessions(db_cursor, current_user_info, current_session_info, int(wtf[0]))
+                            except ValueError or IndexError:
+                                print("┣━━━━━ Error: use 'stats <n>'")
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif input_line == 'group stats' or (len(splitedline8) != 0 and len(input_line.split()) == 3):
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        if input_line == 'group stats':
+                            print("┣━━━━━ Showing last 10 results by default (use h for more info):")
+                            show_group_list_of_sessions(db_cursor, current_active_group)
+                        else:
+                            try:
+                                regular = re.compile('[0-9]+')
+                                wtf = regular.findall(input_line)
+                                print("┣━━━━━ Showing last %s results:" % wtf[0])
+                                show_group_list_of_sessions(db_cursor, current_active_group, int(wtf[0]))
                             except ValueError or IndexError:
                                 print("┣━━━━━ Error: use 'stats <n>'")
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
