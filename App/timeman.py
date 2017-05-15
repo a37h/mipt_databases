@@ -42,6 +42,9 @@ def main():
                 if input_line == 'h' or input_line == 'help':
                     frontend_show_help(current_user_info)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif input_line == 'help groups':
+                    frontend_show_help_groups(current_user_info)
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif input_line == 'r' or input_line == 'register':
                     if len(current_user_info) == 0:
                         current_user_info = frontend_user_registration(db_cursor)

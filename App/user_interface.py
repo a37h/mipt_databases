@@ -98,7 +98,6 @@ def join_group(db_cursor, current_user_info, group_name_):
         return
 
 
-
 def create_group(db_cursor, current_user_info, group_name_):
     try:
         sql_string = "INSERT INTO Groups (group_name) VALUES (%s)"
@@ -260,5 +259,23 @@ def frontend_show_help(current_user_info):
         print("┃  'o' or 'logout' to logout from your account                   ┃")
         print("┃  'g' or 'go' to start a time management session                ┃")
         print("┃  's' or 'stop' to stop a time management session               ┃")
-        print("┃  'stats' or 'stats n' to get a list of 10 or n last sessions   ┃")
+        print("┃  'stats' or 'stats <n>' to get a list of 10 or n last sessions ┃")
+        print("┃  'help groups' to get a list of commands for using groups      ┃")
+        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
+
+# Help
+def frontend_show_help_groups(current_user_info):
+    if len(current_user_info) == 0:
+        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
+        print("┃  'r' or 'register' to register if you're new                   ┃")
+        print("┃  'l' or 'login' to login if you're already registered          ┃")
+        print("┃  'c' or 'clear' if you want to clear your screen               ┃")
+        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
+    else:
+        print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓")
+        print("┃  'create group <group name>' to create a group                 ┃")
+        print("┃  'invite to <group name> user <user name> to invite a user     ┃")
+        print("┃  'join group <group name>' to join a group                     ┃")
+        print("┃  'leave group <group name>' to leave a group                   ┃")
+        print("┃  'delete group <group name>' to delete a group                 ┃")
         print("┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛")
