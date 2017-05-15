@@ -24,6 +24,9 @@ def main():
     regular1 = re.compile('stats [0-9]*')
     regular2 = re.compile('create group [a-zA-Z0-9]*')
     regular3 = re.compile('invite to [a-zA-Z0-9]* user [a-zA-Z0-9]*')
+    regular4 = re.compile('join group [a-zA-Z0-9]*')
+    regular5 = re.compile('delete group [a-zA-Z0-9]*')
+    regular6 = re.compile('leave group [a-zA-Z0-9]*')
 
     while True:
         try:
@@ -32,6 +35,9 @@ def main():
                 splitedline = regular1.findall(input_line)
                 splitedline2 = regular2.findall(input_line)
                 splitedline3 = regular3.findall(input_line)
+                splitedline4 = regular4.findall(input_line)
+                splitedline5 = regular5.findall(input_line)
+                splitedline6 = regular6.findall(input_line)
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 if input_line == 'h' or input_line == 'help':
                     frontend_show_help(current_user_info)
@@ -105,9 +111,8 @@ def main():
                     else:
                         regular = re.compile('[a-zA-Z0-9]*')
                         wtf = regular.findall(input_line)
-                        print(wtf)
-                        print("┣━━━━━ Creating group called '%s':" % wtf[4])
-                        create_group(db_cursor, db_connection, current_user_info, wtf[4])
+                        print("┣━━━━━ ...creating group called '%s':" % wtf[4])
+                        create_group(db_cursor, current_user_info, wtf[4])
                         db_connection.commit()
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 elif len(splitedline3) != 0:
@@ -116,9 +121,38 @@ def main():
                     else:
                         regular = re.compile('[a-zA-Z0-9]*')
                         wtf = regular.findall(input_line)
-                        print(wtf)
-                        print("┣━━━━━ Inviting user %s to group %s:" % (wtf[4], wtf[8]))
-                        invite_to_group(db_cursor, db_connection, current_user_info, wtf[4], wtf[8])
+                        print("┣━━━━━ ... inviting user '%s' to group '%s':" % (wtf[4], wtf[8]))
+                        invite_to_group(db_cursor, current_user_info, wtf[4], wtf[8])
+                        db_connection.commit()
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif len(splitedline4) != 0:
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        regular = re.compile('[a-zA-Z0-9]*')
+                        wtf = regular.findall(input_line)
+                        print("┣━━━━━ ... trying to join group '%s':" % wtf[4])
+                        join_group(db_cursor, current_user_info, wtf[4])
+                        db_connection.commit()
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif len(splitedline5) != 0:
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        regular = re.compile('[a-zA-Z0-9]*')
+                        wtf = regular.findall(input_line)
+                        print("┣━━━━━ ... trying to delete group '%s':" % wtf[4])
+                        delete_group(db_cursor, current_user_info, wtf[4])
+                        db_connection.commit()
+                # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+                elif len(splitedline6) != 0:
+                    if len(current_user_info) == 0:
+                        print("┣━━━━━ Error: you aren't logged in. Use 'l' or 'login'")
+                    else:
+                        regular = re.compile('[a-zA-Z0-9]*')
+                        wtf = regular.findall(input_line)
+                        print("┣━━━━━ ... trying to leave group '%s':" % wtf[4])
+                        leave_group(db_cursor, current_user_info, wtf[4])
                         db_connection.commit()
                 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
                 else:

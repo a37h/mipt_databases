@@ -5,7 +5,101 @@ from time import gmtime, strftime
 from entity_ids import *
 
 
-def create_group(db_cursor, db_connection, current_user_info, group_name_):
+def delete_group(db_cursor, current_user_info, group_name_):
+    try:
+        group_id = backend_get_group_id(db_cursor, group_name_)
+        if group_id == -1:
+            print("┣━━━━━ Error: there is no such group yet.")
+            return
+        # check if current_user is a member
+        sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND user_id = %s AND user_status = '1'"
+        sql_data_tuple = (group_id, current_user_info[1],)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) == 0:
+            print("┣━━━━━ Error: you don't have permission.")
+            return
+        else:
+            sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND (user_status = '1' OR user_status = '2')"
+            sql_data_tuple = (group_id,)
+            db_cursor.execute(sql_string, sql_data_tuple)
+            something = db_cursor.fetchall()
+            for i in something:
+                sql_string = "UPDATE User_groups SET user_status = '0' WHERE group_id = %s AND user_id = %s;"
+                sql_data_tuple = (group_id, i[1])
+                db_cursor.execute(sql_string, sql_data_tuple)
+                print("┣━━━━━ Success.")
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return
+
+
+def leave_group(db_cursor, current_user_info, group_name_):
+    try:
+        group_id = backend_get_group_id(db_cursor, group_name_)
+        if group_id == -1:
+            print("┣━━━━━ Error: there is no such group yet.")
+            return
+        # check if current_user is a member
+        sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND user_id = %s AND user_status = '1'"
+        sql_data_tuple = (group_id, current_user_info[1],)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) == 0:
+            print("┣━━━━━ Error: you aren't a member of that group.")
+            return
+        else:
+            sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND (user_status = '1' OR user_status = '2')"
+            sql_data_tuple = (group_id,)
+            db_cursor.execute(sql_string, sql_data_tuple)
+            something = db_cursor.fetchall()
+            i = something[0]
+            sql_string = "UPDATE User_groups SET user_status = '0' WHERE group_id = %s AND user_id = %s;"
+            sql_data_tuple = (group_id, i[1])
+            db_cursor.execute(sql_string, sql_data_tuple)
+            print("┣━━━━━ Success.")
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return
+
+
+
+def join_group(db_cursor, current_user_info, group_name_):
+    try:
+        # check if group exist
+        temp = backend_get_group_id(db_cursor, group_name_)
+        if temp == -1:
+            print("┣━━━━━ Error: there is no such group yet.")
+            return
+
+        # check if current_user is invited
+        sql_string = "SELECT * FROM User_groups WHERE user_id = %s"
+        sql_data_tuple = (current_user_info[1],)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) == 0:
+            print("┣━━━━━ Error: you are not invited to that group.")
+            return
+        else:
+            if something[0][2] == '0':
+                print("┣━━━━━ Error: you are not invited to that group.")
+                return
+            if something[0][2] == '1':
+                print("┣━━━━━ Error: you are already a member.")
+                return
+            if something[0][2] == '2':
+                sql_string = "UPDATE User_groups SET user_status = '1' WHERE group_id = %s AND user_id = %s;"
+                sql_data_tuple = (temp, current_user_info[1])
+                db_cursor.execute(sql_string, sql_data_tuple)
+                print("┣━━━━━ Success.")
+                return
+    except psycopg2.Error as e:
+        print("┣━━━━━ Error: some unexpected error.", e)
+        return
+
+
+
+def create_group(db_cursor, current_user_info, group_name_):
     try:
         sql_string = "INSERT INTO Groups (group_name) VALUES (%s)"
         sql_data_tuple = (group_name_,)
@@ -22,19 +116,63 @@ def create_group(db_cursor, db_connection, current_user_info, group_name_):
         return
 
 
-def invite_to_group(db_cursor, db_connection, current_user_info, group_name_, other_user_name):
+def invite_to_group(db_cursor, current_user_info, group_name_, other_user_name):
     try:
-        sql_string = "SELECT * FROM User_groups WHERE user_id = %s AND user_status = '1'"
-        sql_data_tuple = (current_user_info[1],)
+        group_id = backend_get_group_id(db_cursor, group_name_)
+        if group_id == -1:
+            print("┣━━━━━ Error: there is no such group yet.")
+            return
+
+        # check if current_user is a member
+        sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND user_id = %s AND user_status = '1'"
+        sql_data_tuple = (group_id, current_user_info[1],)
         db_cursor.execute(sql_string, sql_data_tuple)
         something = db_cursor.fetchall()
         if len(something) == 0:
+            print("┣━━━━━ Error: you don't have permission.")
             return
-        group_id = backend_get_group_id(db_cursor, group_name_)
+
         other_user_id = backend_get_user_id(db_cursor, other_user_name)
+        if other_user_id == -1:
+            print("┣━━━━━ Error: there is no such user yet.")
+            return
+
+        # check if adding yourself
+        if current_user_info[0] == other_user_name:
+            print("┣━━━━━ Error: you can't invite yourself.")
+            return
+
+        # check if other user is already a member or invited
+        sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND user_id = %s AND (user_status = '1' OR user_status = '2')"
+        sql_data_tuple = (group_id, other_user_id,)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) != 0:
+            if something[0][2] == 1:
+                print("┣━━━━━ Error, that user is already a member.")
+            else:
+                print("┣━━━━━ Error, that user is already invited.")
+            return
+
+
+        # check if other user is not a member (means he has user_status 0)
+        sql_string = "SELECT * FROM User_groups WHERE group_id = %s AND user_id = %s AND user_status = '0'"
+        sql_data_tuple = (group_id, other_user_id,)
+        db_cursor.execute(sql_string, sql_data_tuple)
+        something = db_cursor.fetchall()
+        if len(something) != 0:
+            sql_string = "UPDATE User_groups SET user_status = '2' WHERE group_id = %s AND user_id = %s;"
+            sql_data_tuple = (other_user_id,)
+            db_cursor.execute(sql_string, sql_data_tuple)
+            print('┣━━━━━ Success.')
+            return
+
+
+        # well we can invite him now
         sql_string = "INSERT INTO User_groups (group_id, user_id, user_status) VALUES (%s, %s, 2)"
         sql_data_tuple = (group_id, other_user_id)
         db_cursor.execute(sql_string, sql_data_tuple)
+        print('┣━━━━━ Success.')
     except psycopg2.Error as e:
         print("┣━━━━━ Error: some unexpected error.", e)
         return

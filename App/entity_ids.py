@@ -6,7 +6,10 @@ def backend_get_user_id(db_cursor, name):
     sql_data_tuple = (name,)
     db_cursor.execute(sql_string, sql_data_tuple)
     new_user_id_list = db_cursor.fetchall()
-    return new_user_id_list[0]
+    if len(new_user_id_list) == 0:
+        return -1
+    else:
+        return new_user_id_list[0]
 
 
 # Used in registration and login
@@ -23,4 +26,7 @@ def backend_get_group_id(db_cursor, group_name):
     sql_data_tuple = (group_name,)
     db_cursor.execute(sql_string, sql_data_tuple)
     qq = db_cursor.fetchall()
-    return qq[0]
+    if len(qq) == 0:
+        return -1
+    else:
+        return qq[0]
