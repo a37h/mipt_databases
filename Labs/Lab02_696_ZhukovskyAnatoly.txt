@@ -1,0 +1,96 @@
+1. 
+SELECT model, seat_no, fare_conditions FROM Aircrafts, Seats 
+WHERE Aircrafts.range < 3000 and Aircrafts.aircraft_code = Seats.aircraft_code
+
+2. 
+SELECT
+Flight_id, Flight_no, scheduled_departure, scheduled_arrival, 
+first_airport.airport_name AS departure_airport,
+second_airport.airport_name AS arrival_airport, 
+status, aircraft_code, actual_departure, actual_arrival
+FROM Flights, airports first_airport, airports second_airport
+WHERE
+Flights.departure_airport = first_airport.airport_code
+AND 
+Flights.arrival_airport = second_airport.airport_code
+ORDER BY Flight_id DESC
+LIMIT(10);
+
+3. 
+SELECT DISTINCT model
+FROM Flights, Airports, Aircrafts
+WHERE Flights.departure_airport = Airports.airport_code 
+and Airports.airport_name = 'Владивосток'
+and Flights.aircraft_code = Aircrafts.aircraft_code;
+
+4.
+SELECT DISTINCT Flights.flight_no, Flights.scheduled_departure, 
+Ticket_flights.ticket_no, Boarding_passes.boarding_no
+FROM Flights, Ticket_flights, Boarding_passes
+WHERE Flights.flight_id = Boarding_passes.flight_id AND
+Ticket_flights.ticket_no = Boarding_passes.ticket_no AND
+Flights.departure_airport = 'DME' AND
+(status = 'On Time' or status = 'Delayed') AND
+Flights.scheduled_departure BETWEEN
+bookings.now() AND bookings.now() + '1:00:00';
+
+5.
+SELECT DISTINCT Flights.flight_no, Flights.scheduled_departure, 
+Ticket_flights.ticket_no, Boarding_passes.boarding_no
+FROM Flights, Ticket_flights, Boarding_passes, Seats
+WHERE Flights.flight_id = Boarding_passes.flight_id AND
+Ticket_flights.ticket_no = Boarding_passes.ticket_no AND
+Flights.departure_airport = 'DME' AND
+(status = 'On Time' or status = 'Delayed') AND
+Flights.scheduled_departure BETWEEN
+bookings.now() AND bookings.now() + '1:00:00' AND
+Seats.aircraft_code = Flights.aircraft_code AND
+seats.fare_conditions = 'Business';
+
+6.
+SELECT 
+flights_1.scheduled_departure, flights_1.scheduled_arrival,
+flights_2.scheduled_departure - flights_1.scheduled_arrival AS time_between,
+flights_2.scheduled_departure, flights_2.scheduled_arrival, 
+flights_2.scheduled_arrival - flights_1.scheduled_departure AS time_all
+FROM Flights flights_1, Flights flights_2
+WHERE 
+flights_1.departure_airport = 'LED' 
+AND flights_1.arrival_airport = 'VKO'
+AND flights_2.departure_airport ='VKO' 
+AND flights_2.arrival_airport = 'VVO' 
+AND (flights_2.scheduled_departure BETWEEN flights_1.scheduled_arrival AND flights_1.scheduled_arrival + '12:00:00')
+AND (flights_2.scheduled_departure BETWEEN bookings.now() AND bookings.now() + '7 days')
+ORDER BY (flights_2.scheduled_arrival - flights_1.scheduled_departure), flights_2.scheduled_departure;
+
+7.
+SELECT passenger_name, amount FROM Tickets, Ticket_flights
+WHERE Tickets.ticket_no = Ticket_flights.ticket_no ORDER BY amount DESC LIMIT(10);
+
+8.
+SELECT Bookings.book_ref, Bookings.book_date, 
+Tickets.ticket_no, Ticket_flights.flight_id, 
+Boarding_passes.boarding_no, Boarding_passes.seat_no, Ticket_flights.fare_conditions
+FROM Bookings, Ticket_flights, Tickets
+FULL JOIN Boarding_passes on Tickets.ticket_no = Boarding_passes.ticket_no
+WHERE
+Tickets.passenger_name = 'YULIYA MOROZOVA' AND
+(book_date BETWEEN bookings.now() - INTERVAL '7 days' AND bookings.now()) AND
+Bookings.book_ref = Tickets.book_ref AND
+Tickets.ticket_no = Ticket_flights.ticket_no
+ORDER BY book_ref, book_date LIMIT (50);
+
+9. Найти "папика" который улетает в ближайший час
+
+SELECT DISTINCT passenger_name, total_amount
+FROM Bookings, Tickets, Ticket_flights, Flights, Airports
+WHERE
+Flights.scheduled_departure BETWEEN bookings.now() AND bookings.now() + '1:00:00'
+AND
+Flights.flight_id = Ticket_flights.flight_id 
+AND
+Ticket_flights.ticket_no = Tickets.ticket_no 
+AND
+Tickets.book_ref = Bookings.book_ref
+ORDER BY total_amount DESC
+LIMIT 10;

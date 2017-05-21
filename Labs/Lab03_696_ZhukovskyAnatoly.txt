@@ -1,0 +1,61 @@
+1.
+SELECT max(range) AS max_range, min(range) AS min_range FROM aircrafts;
+
+2.
+SELECT model, (SELECT count(seat_no) FROM seats WHERE 
+seats.aircraft_code = aircrafts.aircraft_code) AS seats_amount, 
+range FROM Aircrafts;
+
+3.
+SELECT passenger_name, count(ticket_no) AS amount_of_tickets FROM
+tickets GROUP BY passenger_name ORDER BY amount_of_tickets DESC LIMIT 10;
+
+4.
+SELECT passenger_name, count(tickets.ticket_no) AS amount_of_tickets, ROUND(avg(ticket_flights.amount), 2)
+FROM tickets, ticket_flights WHERE tickets.ticket_no = ticket_flights.ticket_no
+GROUP BY passenger_name ORDER BY amount_of_tickets DESC LIMIT 10;
+
+5.
+SELECT count(flight_no) AS amount_of_flights FROM flights 
+WHERE departure_airport in ('DME','SVO','VKO') AND arrival_airport = 'LED';
+
+6.
+SELECT flights.flight_id, airports.city, flights.scheduled_departure,
+(SELECT COUNT(*) FROM seats WHERE seats.aircraft_code = flights.aircraft_code 
+AND seats.fare_conditions = 'Business') AS Business,
+(SELECT COUNT(*) FROM seats WHERE seats.aircraft_code = flights.aircraft_code 
+AND seats.fare_conditions = 'Economy') AS Economy,
+(SELECT COUNT(*) FROM seats WHERE seats.aircraft_code = flights.aircraft_code 
+AND seats.fare_conditions = 'Comfort') AS Comfort FROM flights, airports
+WHERE flights.departure_airport = 'DME' AND airports.airport_code = flights.arrival_airport
+AND flights.scheduled_departure <= bookings.now() + INTERVAL '3' HOUR
+AND flights.scheduled_departure >= bookings.now()
+
+7.
+SELECT passenger_name, avg(amount) FROM (SELECT Needed_passengers.passenger_name, amount FROM
+(SELECT passenger_name, Tickets.ticket_no FROM Tickets, Ticket_flights WHERE
+Tickets.ticket_no = Ticket_flights.ticket_no AND flight_id = 2943 AND
+Ticket_flights.fare_conditions = 'Business') AS Needed_passengers,
+Ticket_flights, Tickets WHERE Tickets.ticket_no = Ticket_flights.ticket_no AND Tickets.passenger_name =
+Needed_passengers.passenger_name) as Foo GROUP BY passenger_name HAVING avg(amount) < 20000;
+
+8.
+SELECT tickets.ticket_no, flights.flight_id, 
+scheduled_departure, amount,
+SUM(amount) OVER (ORDER BY scheduled_departure) AS current_costs
+FROM tickets, ticket_flights, flights
+WHERE passenger_name = 'YULIYA MOROZOVA'
+AND
+tickets.ticket_no = ticket_flights.ticket_no
+AND
+ticket_flights.flight_id = flights.flight_id
+ORDER BY scheduled_departure
+
+9. Посчитаем прибыль компании авиаперевозок за все рейсы в Шереметьево которые
+находятся в данной базе и выведем номер рейса и сумму стоимостей всех билетов, 
+сортируем по убыванию:
+
+SELECT Flights.flight_id, sum(amount) as sum FROM Flights, Ticket_flights, Tickets WHERE
+flights.flight_id = ticket_flights.flight_id AND Ticket_flights.ticket_no = Tickets.ticket_no AND
+arrival_airport = 'SVO' GROUP BY
+Flights.flight_id ORDER by sum DESC;

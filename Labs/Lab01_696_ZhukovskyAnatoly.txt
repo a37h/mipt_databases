@@ -1,0 +1,29 @@
+1.
+SELECT * FROM Aircrafts;
+
+2.
+SELECT model,range FROM Aircrafts WHERE range >= 3000;
+
+3.
+SELECT range * 1000 AS rangeInMeters FROM Aircrafts WHERE range >= 3000 ORDER BY range DESC
+
+4.
+SELECT airport_code, airport_name, city, ROUND(CAST(longitude AS numeric) ,2) AS longitude, ROUND(CAST(latitude AS numeric) ,2) AS latitude FROM Airports WHERE latitude >= 66.5622 ORDER BY longitude
+
+5.
+SELECT airport_code FROM Airports WHERE city = 'Горно-Алтайск'
+
+6.
+SELECT * FROM Flights WHERE status = 'Scheduled' AND departure_airport = 'RGK' AND arrival_airport IN('DME', 'VKO', 'SVO')
+
+7.
+SELECT * FROM Flights WHERE departure_airport = 'DME' AND arrival_airport = 'LED' AND scheduled_departure BETWEEN '2016-10-15 00:00:00-04' AND '2016-10-17 23:59:59-04' ORDER BY scheduled_departure, scheduled_arrival DESC LIMIT (10);
+
+8.
+SELECT * FROM Flights WHERE departure_airport = 'DME' AND arrival_airport = 'LED' AND scheduled_departure BETWEEN '2016-10-15 00:00:00-04' AND '2016-10-17 23:59:59-04' ORDER BY scheduled_departure, scheduled_arrival DESC OFFSET 10 ROWS LIMIT (10);
+
+9.
+SELECT DISTINCT airport_code FROM Flights, Airports WHERE departure_airport = 'VKO' AND arrival_airport = airport_code
+
+10.
+SELECT ROUND(CAST(longitude AS numeric) ,2) AS l1l, ROUND(CAST(latitude AS numeric) ,2) AS l3l , airport_code AS l3l , timezone AS l7l FROM Airports WHERE latitude < longitude AND airport_code  NOT IN ('MJZ','HMA') LIMIT (10);
