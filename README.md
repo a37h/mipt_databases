@@ -1,5 +1,7 @@
-# DataBase-Course-Project
+# mipt_databases
 
-Course-project is a time-management app in Python with postgre-sql server interface
+This repository contains stuff I've coded during my **"Relational Calculus and Databases"** course at MIPT.
 
-Labs has 3 labs i've had during the year
+- My course project is a time-management app which command-line interface written in Python 3 using the PostgreSQL server for keeping the app data. 
+
+- Also, there are SQL request examples I've made as a homework solution.
